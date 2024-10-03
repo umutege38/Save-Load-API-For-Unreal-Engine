@@ -18,15 +18,13 @@
  * in a different way.
  * - DAT: Data format, a generic data file with a .dat file extension. It can be in ASCII, binary or other data formats. Can be used in many applications or video games, each situating
  * their own structure or usage.
- * - JSON: JSON (JavaScript Object Notation) format, a lightweight data-interchange format.
  */
 UENUM(BlueprintType)
 enum class ESaveFileFormat :uint8
 {
 	BIN UMETA(DisplayName="Binary", Tooltip="The Binary (BIN) format is a compact, universally recognized file format that stores information in a binary form. Suited for saving complex data structures and easy to use with serialization/deserialization libraries."),
 	SAV UMETA(DisplayName="Save", Tooltip="The Save (SAV) format, often used in video games, is a proprietary file format that typically contains a serialized data structure. Each game or application might use this extension in a different way."),
-	DAT UMETA(DisplayName="Data", Tooltip="The Data (DAT) format is a generic data file with a .dat file extension. It can be in ASCII, binary or other data formats. Can be used in many applications or video games, each situating their own structure or usage."),
-	JSON UMETA(DisplayName="JSON", Tooltip="JSON (JavaScript Object Notation) is a lightweight data-interchange format.")
+	DAT UMETA(DisplayName="Data", Tooltip="The Data (DAT) format is a generic data file with a .dat file extension. It can be in ASCII, binary or other data formats. Can be used in many applications or video games, each situating their own structure or usage.")
 };
 
 /**
@@ -38,11 +36,11 @@ UENUM(BlueprintType)
 enum class EDataType : uint8
 {
 	FloatType     UMETA(DisplayName = "Float", Tooltip="Represents a floating-point number, used for precise calculations."),
+	DoubleType   UMETA(DisplayName = "Double", Tooltip="Represents a double precision floating-point number, used for high precision calculations."),
 	BoolType      UMETA(DisplayName = "Bool", Tooltip="Represents a boolean type, used for true/false conditions."),
 	IntType       UMETA(DisplayName = "Int", Tooltip="Represents an integer number, used for whole number calculations."),
 	FStringType   UMETA(DisplayName = "FString", Tooltip="Represents a string in Unreal Engine, used for text-based data."),
 	EnumType      UMETA(DisplayName = "Enum", Tooltip="Represents an enumeration, used to define a type of element that consists of named constants."),
-	ActorType     UMETA(DisplayName = "Actor", Tooltip="Represents an Actor, which is an object that exists and performs actions in the Unreal Engine world."),
 	VectorType    UMETA(DisplayName = "Vector", Tooltip="Represents a Vector, which is a structure used to hold a three-dimensional point such as position or direction."),
 	RotatorType   UMETA(DisplayName = "Rotator", Tooltip="Represents a Rotator, which is a structure used to hold rotation in 3-dimensional space."),
 	TransformType UMETA(DisplayName = "Transform", Tooltip="Represents a Transform, which is used to store a combination of translation (position), rotation, and scale.")
@@ -114,12 +112,18 @@ class CSS_API USaveLoadManager : public UObject
 {
 	GENERATED_BODY()
 
-public:
-	USaveLoadManager();
-
 private:
 
-	inline static FString DefaultSaveFileName = "GameSave"; // You can change this name, but make sure to delete the old save before doing so.
+	/**
+	 * \brief Default filename to use for saving data.
+	 *
+	 * This inline static variable of type FString is the default filename used when saving data, initialized with the value "GameSave".
+	 *
+	 * No specific file extension is provided in `DefaultSaveFileName` as the actual file extension is determined by the ESaveFileFormat used during save operations.
+	 *
+	 * For example, if ESaveFileFormat::BIN is used, the actual save file might be "GameSave.bin".
+	 */ 
+	inline static FString DefaultSaveFileName = "GameSave"; 
 
 public:
 
@@ -207,6 +211,19 @@ public:
 	 */
 	UFUNCTION(BlueprintCallable, Category = "SaveLoad", Meta = (ToolTip = "Deletes the data associated with a given key from a specific file."))
 	static bool DeleteData(const FString& Key, const FString& SaveFilePath);
+
+	/**
+	 * \brief Deletes all data from the specified save file.
+	 *
+	 * This method takes the file path of the save file and deletes all the data within it. If the file exists, it empties the file content effectively. If the file does not exist, it returns
+	 * false without performing any deletion.
+	 *
+	 * \param SaveFilePath The path to the save file from which all data should be deleted.
+	 *
+	 * \return True if the data deletion is successful, false otherwise.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "SaveLoad", Meta = (ToolTip = "Deletes all the data from a specific file."))
+	static bool DeleteAllData(const FString& SaveFilePath);
 	
 	/**
 	 * \fn TArray<uint8> FloatToByteArray(float Value)
@@ -411,6 +428,10 @@ public:
 		return EnumValue;
 	}
 
+	/**
+	 * @param Value The FTransform value to be converted to a byte array.
+	 * @return A byte array containing the serialized data of the input FTransform.
+	 */
 	UFUNCTION(BlueprintCallable, Category = "SaveLoad", Meta = (ToolTip = "Converts an FTransform to a byte array."))
 	static TArray<uint8> TransformToByteArray(FTransform Value)
 	{
@@ -420,10 +441,103 @@ public:
 		return ByteArray;
 	}
 
+	/**
+	 * \brief Converts a byte array to a FTransform.
+	 * \param ByteArray The byte array to be converted to a FTransform.
+	 * \return FTransform The FTransform object created from the byte array.
+	 */
 	UFUNCTION(BlueprintCallable, Category = "SaveLoad", Meta = (ToolTip = "Converts a byte array to a FTransform."))
 	static FTransform ByteArrayToTransform(const TArray<uint8>& ByteArray)
 	{
 		FTransform Value;
+		FMemoryReader MemoryReader(ByteArray, true);
+		MemoryReader << Value;
+		return Value;
+	}
+
+	/**
+	 * @param Value The FVector to be converted to a byte array.
+	 * @return The byte array representing the serialized data of the input FVector.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "SaveLoad", Meta = (ToolTip = "Converts an FVector to a byte array."))
+	static TArray<uint8> VectorToByteArray(FVector Value)
+	{
+		TArray<uint8> ByteArray;
+		FMemoryWriter MemoryWriter(ByteArray, true);
+		MemoryWriter << Value;
+		return ByteArray;
+	}
+
+	/**
+	 * \brief Converts a byte array to an FVector.
+	 *
+	 * This method takes a byte array and deserializes it into an FVector object using FMemoryReader. The byte array is expected to contain serialized FVector data that will be read into
+	 * the output FVector Value.
+	 *
+	 * @param ByteArray The input byte array containing the serialized FVector data.
+	 * @return An FVector object created from deserializing the data in the byte array.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "SaveLoad", Meta = (ToolTip = "Converts a byte array to an FVector."))
+	static FVector ByteArrayToVector(const TArray<uint8>& ByteArray)
+	{
+		FVector Value;
+		FMemoryReader MemoryReader(ByteArray, true);
+		MemoryReader << Value;
+		return Value;
+	}
+
+	/**
+	 * @param Value The FRotator value to be converted to a byte array.
+	 * @return An array of uint8 representing the converted FRotator value in byte form.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "SaveLoad", Meta = (ToolTip = "Converts an FRotator to a byte array."))
+	static TArray<uint8> RotatorToByteArray(FRotator Value)
+	{
+		TArray<uint8> ByteArray;
+		FMemoryWriter MemoryWriter(ByteArray, true);
+		MemoryWriter << Value;
+		return ByteArray;
+	}
+
+	/**
+	 * @brief Converts a byte array to an FRotator.
+	 *
+	 * This method takes a byte array input and converts it to an FRotator object. It utilizes FMemoryReader to read the data from the byte array and populate the FRotator object.
+	 *
+	 * @param ByteArray The byte array containing the data to be converted to an FRotator.
+	 * @return FRotator The FRotator object created from the byte array data.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "SaveLoad", Meta = (ToolTip = "Converts a byte array to an FRotator."))
+	static FRotator ByteArrayToRotator(const TArray<uint8>& ByteArray)
+	{
+		FRotator Value;
+		FMemoryReader MemoryReader(ByteArray, true);
+		MemoryReader << Value;
+		return Value;
+	}
+
+	/**
+	 * @param Value The double value to be converted to a byte array.
+	 * @return A byte array representing the converted double value.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "SaveLoad", Meta = (ToolTip = "Converts a double to a byte array."))
+	static TArray<uint8> DoubleToByteArray(double Value)
+	{
+		TArray<uint8> ByteArray;
+		FMemoryWriter MemoryWriter(ByteArray, true);
+		MemoryWriter << Value;
+		return ByteArray;
+	}
+
+	/**
+	 * \brief Converts a byte array to a double.
+	 * \param ByteArray The input byte array to be converted to a double.
+	 * \return The double value obtained from the byte array.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "SaveLoad", Meta = (ToolTip = "Converts a byte array to a double."))
+	static double ByteArrayToDouble(const TArray<uint8>& ByteArray)
+	{
+		double Value;
 		FMemoryReader MemoryReader(ByteArray, true);
 		MemoryReader << Value;
 		return Value;

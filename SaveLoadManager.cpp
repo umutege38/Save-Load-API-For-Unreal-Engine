@@ -4,10 +4,6 @@
 #include "Serialization/Archive.h"
 #include "Serialization/BufferArchive.h"
 
-USaveLoadManager::USaveLoadManager()
-{
-	
-}
 
 FString USaveLoadManager::PrepareFilePath(const FString& FileName, ESaveFileFormat SaveFileFormat)
 {
@@ -222,6 +218,41 @@ bool USaveLoadManager::DeleteData(const FString& Key, const FString& SaveFilePat
 	}
 	else
 	{
+		return false;
+	}
+}
+
+bool USaveLoadManager::DeleteAllData(const FString& SaveFilePath)
+{
+	// Check if the file exists
+	if (FPaths::FileExists(SaveFilePath))
+	{
+		// Create an empty FSerializedData array
+		TArray<FSerializedData> EmptyDataArray;
+
+		// Serialize the empty FSerializedData array to a byte array
+		TArray<uint8> EmptyByteArray;
+		FMemoryWriter MemoryWriter(EmptyByteArray, true);
+		for (FSerializedData& DataEntry : EmptyDataArray)
+		{
+			MemoryWriter << DataEntry;
+		}
+
+		// Write the empty byte array to the file, effectively clearing it
+		if (FFileHelper::SaveArrayToFile(EmptyByteArray, *SaveFilePath))
+		{
+			// Return true if successful
+			return true;
+		}
+		else
+		{
+			// Return false if saving array to file failed
+			return false;
+		}
+	}
+	else
+	{
+		// Return false if file does not exist
 		return false;
 	}
 }
