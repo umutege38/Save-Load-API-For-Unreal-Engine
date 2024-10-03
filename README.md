@@ -9,9 +9,10 @@ The Save/Load API for Unreal Engine provides a simple and efficient system to sa
 - Error handling for safe data retrieval.
 ## Installation
 1. Clone or download the repository.
-2. Place the plugin in your Unreal project’s Plugins or Source folder.
-3. Open your project in Unreal Engine, rebuild the project, and start using the API.
-Usage
+2. Place the scripts in  your project's Source folder.
+3. Rebuild the project, and start using the API.
+
+## Usage
 For detailed usage instructions and API references, visit the documentation.
 
 ## License
