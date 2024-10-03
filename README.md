@@ -3,7 +3,7 @@
 The Save/Load API for Unreal Engine provides a simple and efficient system to save and load game data in Unreal Engine projects. It supports a variety of data types (such as floats, integers, and strings) and stores them in binary format for optimized performance. The API also allows you to choose from supported file types: .bin, .dat, and .sav, making it flexible for different use cases. This plugin integrates seamlessly with Unreal Engine’s file management system.
 
 ## Features
-- Save/load floats, integers, strings, and custom data types.
+- Save/load floats, integers, strings, doubles, enumerators and custom data types.
 - Optimized binary file storage.
 - Easy file path management for organizing save data.
 - Error handling for safe data retrieval.
