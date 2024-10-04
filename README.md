@@ -13,7 +13,7 @@ The Save/Load API for Unreal Engine provides a simple and efficient system to sa
 3. Rebuild the project, and start using the API.
 
 ## Usage
-For detailed usage instructions and API references, visit the latest documentation [here](https://umutege38.github.io/Save-Load-API-For-Unreal-Engine-Documentation/example-usages-of-the-api.html).
+For detailed usage instructions and API references, visit the latest documentation [here](https://umutege38.github.io/Save-Load-API-For-Unreal-Engine-Documentation/api-docs.html).
 
 ## License
 This project is licensed under the MIT License. See the [LICENSE](https://github.com/umutege38/Save-Load-API-For-Unreal-Engine/blob/main/LICENSE) file for details.
