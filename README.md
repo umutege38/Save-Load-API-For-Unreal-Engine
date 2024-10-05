@@ -9,8 +9,9 @@ The Save/Load API for Unreal Engine provides a simple and efficient system to sa
 - Error handling for safe data retrieval.
 ## Installation
 1. Clone or download the repository.
-2. Place the scripts in  your project's Source folder.
-3. Rebuild the project, and start using the API.
+2. Place the scripts in your project's Source folder.
+3. Replace the CSS_API with you own project name(MyGameName_API).
+4. Rebuild the project, and start using the API.
 
 ## Usage
 For detailed usage instructions and API references, visit the latest documentation [here](https://umutege38.github.io/Save-Load-API-For-Unreal-Engine-Documentation/api-docs.html).
